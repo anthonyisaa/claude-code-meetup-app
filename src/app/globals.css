@@ -1,0 +1,78 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-background: var(--bg-primary);
+  --color-foreground: var(--text-primary);
+  --font-sans: var(--font-dm-sans);
+  --font-mono: var(--font-jetbrains-mono);
+
+  /* Background */
+  --color-bg-primary: #0A0A0F;
+  --color-bg-secondary: #12121A;
+  --color-bg-elevated: #1A1A25;
+
+  /* Text */
+  --color-text-primary: #F0EDE6;
+  --color-text-secondary: #8E8B82;
+  --color-text-accent: #DC6B2F;
+
+  /* Accent */
+  --color-accent-primary: #DC6B2F;
+  --color-accent-secondary: #7C3AED;
+  --color-accent-success: #10B981;
+
+  /* Borders */
+  --color-border-subtle: rgba(255, 255, 255, 0.06);
+  --color-border-hover: rgba(255, 255, 255, 0.12);
+}
+
+:root {
+  --bg-primary: #0A0A0F;
+  --bg-secondary: #12121A;
+  --bg-elevated: #1A1A25;
+  --text-primary: #F0EDE6;
+  --text-secondary: #8E8B82;
+  --text-accent: #DC6B2F;
+  --accent-primary: #DC6B2F;
+  --accent-secondary: #7C3AED;
+  --accent-success: #10B981;
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-hover: rgba(255, 255, 255, 0.12);
+  --glow-orange: 0 0 20px rgba(220, 107, 47, 0.3);
+  --glow-purple: 0 0 20px rgba(124, 58, 237, 0.3);
+}
+
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* Card entrance animation */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Beacon glow pulse */
+@keyframes beaconPulse {
+  0%, 100% { box-shadow: 0 0 20px var(--tag-glow, var(--accent-primary)); }
+  50% { box-shadow: 0 0 60px var(--tag-glow, var(--accent-primary)), 0 0 100px var(--tag-glow, var(--accent-primary)); }
+}
+
+/* Live badge pulse */
+@keyframes livePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.animate-fade-up {
+  animation: fadeUp 0.4s ease-out forwards;
+}
+
+.animate-beacon-pulse {
+  animation: beaconPulse 2s ease-in-out infinite;
+}
+
+.animate-live-pulse {
+  animation: livePulse 1.5s ease-in-out infinite;
+}
