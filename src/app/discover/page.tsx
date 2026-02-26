@@ -6,6 +6,8 @@ import { createClient } from "@/lib/supabase/client";
 import { INTEREST_TAGS } from "@/lib/constants";
 import ProfileCard from "@/components/ProfileCard";
 import BottomNav from "@/components/BottomNav";
+import NuxWalkthrough from "@/components/NuxWalkthrough";
+import LiveBeaconsFeed from "@/components/LiveBeaconsFeed";
 
 interface DiscoverProfile {
   id: string;
@@ -16,6 +18,8 @@ interface DiscoverProfile {
   photo_url: string | null;
   primary_tag: string | null;
   is_beacon_active: boolean;
+  beacon_totem: string | null;
+  beacon_color: string | null;
   match_score: number;
   match_reason: string;
   conversation_starter: string;
@@ -209,6 +213,9 @@ export default function DiscoverPage() {
       </div>
 
       <div className="px-4 space-y-3">
+        {/* Live Beacons */}
+        <LiveBeaconsFeed />
+
         {/* Random match overlay */}
         {showRandom && (
           <div
@@ -287,6 +294,7 @@ export default function DiscoverPage() {
         )}
       </div>
 
+      <NuxWalkthrough />
       <BottomNav />
     </div>
   );

@@ -5,57 +5,12 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { TOTEMS, PIXEL_COLORS, BG_COLORS, type Totem } from "@/lib/totems";
 import BottomNav from "@/components/BottomNav";
+import PixelTotem from "@/components/PixelTotem";
 
-/* ─── Pixel Art Renderer ─── */
-function PixelTotem({
-  totem,
-  color,
-  bgColor,
-  size,
-}: {
-  totem: Totem;
-  color: string;
-  bgColor: string;
-  size: number;
-}) {
-  const rows = totem.grid.length;
-  const cols = totem.grid[0].length;
-  const cellSize = Math.floor(size / Math.max(rows, cols));
-  const gap = Math.max(1, Math.floor(cellSize * 0.08));
-
-  return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: `repeat(${cols}, ${cellSize}px)`,
-        gridTemplateRows: `repeat(${rows}, ${cellSize}px)`,
-        gap: `${gap}px`,
-      }}
-    >
-      {totem.grid.flatMap((row, r) =>
-        row.split("").map((cell, c) => (
-          <div
-            key={`${r}-${c}`}
-            style={{
-              width: cellSize,
-              height: cellSize,
-              borderRadius: Math.max(2, cellSize * 0.1),
-              background:
-                cell === "0"
-                  ? "transparent"
-                  : cell === "2"
-                    ? bgColor
-                    : color,
-              boxShadow:
-                cell === "1"
-                  ? `0 0 ${cellSize * 0.4}px ${color}30`
-                  : "none",
-            }}
-          />
-        ))
-      )}
-    </div>
-  );
+interface IncomingPing {
+  id: string;
+  name: string;
+  created_at: string;
 }
 
 /* ─── Totem Thumbnail (for picker) ─── */
@@ -150,6 +105,11 @@ export default function BeaconPage() {
   const [isLive, setIsLive] = useState(false);
   const [activating, setActivating] = useState(false);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
+  const [pingCount, setPingCount] = useState(0);
+  const [latestPing, setLatestPing] = useState<IncomingPing | null>(null);
+  const [showPingToast, setShowPingToast] = useState(false);
+  const pingPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const beaconStartRef = useRef<string | null>(null);
 
   // Auth guard + load saved preferences
   useEffect(() => {
@@ -200,6 +160,45 @@ export default function BeaconPage() {
     else releaseWakeLock();
     return releaseWakeLock;
   }, [isLive, requestWakeLock, releaseWakeLock]);
+
+  // Poll for incoming pings while live
+  useEffect(() => {
+    if (!isLive) {
+      if (pingPollRef.current) clearInterval(pingPollRef.current);
+      return;
+    }
+
+    beaconStartRef.current = new Date().toISOString();
+    setPingCount(0);
+
+    const poll = async () => {
+      try {
+        const since = beaconStartRef.current || new Date().toISOString();
+        const res = await fetch(`/api/beacon/ping?since=${since}`);
+        const { pings } = await res.json();
+        if (pings && pings.length > 0) {
+          setPingCount(pings.length);
+          const newest = pings[0];
+          setLatestPing({
+            id: newest.id,
+            name: newest.profiles?.name ?? "Someone",
+            created_at: newest.created_at,
+          });
+          setShowPingToast(true);
+          setTimeout(() => setShowPingToast(false), 3000);
+        }
+      } catch {
+        // Silently fail
+      }
+    };
+
+    poll();
+    pingPollRef.current = setInterval(poll, 5_000);
+
+    return () => {
+      if (pingPollRef.current) clearInterval(pingPollRef.current);
+    };
+  }, [isLive]);
 
   const goLive = async () => {
     setActivating(true);
@@ -295,17 +294,46 @@ export default function BeaconPage() {
           </p>
         )}
 
-        {/* LIVE badge */}
-        <div
-          className="relative z-10 animate-live-pulse mt-6 px-4 py-1.5 rounded-full text-sm font-mono font-bold tracking-widest"
-          style={{
-            background: `${selectedColor}15`,
-            color: selectedColor,
-            border: `1px solid ${selectedColor}30`,
-          }}
-        >
-          LIVE
+        {/* LIVE badge + ping counter */}
+        <div className="relative z-10 mt-6 flex items-center gap-3">
+          <div
+            className="animate-live-pulse px-4 py-1.5 rounded-full text-sm font-mono font-bold tracking-widest"
+            style={{
+              background: `${selectedColor}15`,
+              color: selectedColor,
+              border: `1px solid ${selectedColor}30`,
+            }}
+          >
+            LIVE
+          </div>
+          {pingCount > 0 && (
+            <div
+              className="px-3 py-1.5 rounded-full text-sm font-mono font-bold"
+              style={{
+                background: `${selectedColor}20`,
+                color: selectedColor,
+                border: `1px solid ${selectedColor}40`,
+              }}
+            >
+              {pingCount} ping{pingCount !== 1 ? "s" : ""}
+            </div>
+          )}
         </div>
+
+        {/* Ping toast */}
+        {showPingToast && latestPing && (
+          <div
+            className="absolute top-12 z-20 animate-fade-up px-5 py-3 rounded-2xl font-mono text-sm font-bold"
+            style={{
+              background: `${selectedColor}20`,
+              color: selectedColor,
+              border: `1px solid ${selectedColor}40`,
+              backdropFilter: "blur(8px)",
+            }}
+          >
+            {latestPing.name} is on the way!
+          </div>
+        )}
 
         {/* Exit hint */}
         <p

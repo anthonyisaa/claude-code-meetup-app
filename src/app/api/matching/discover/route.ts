@@ -42,7 +42,7 @@ export async function GET(request: Request) {
   // Fetch those profiles
   let profileQuery = supabase
     .from("profiles")
-    .select("id, name, role, tags, looking_for, claude_title, photo_url, primary_tag, is_beacon_active")
+    .select("id, name, role, tags, looking_for, claude_title, photo_url, primary_tag, is_beacon_active, beacon_totem, beacon_color")
     .in("id", otherUserIds);
 
   if (tagFilter) {

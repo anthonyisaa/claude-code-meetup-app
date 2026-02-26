@@ -5,7 +5,10 @@ import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { TAG_COLORS } from "@/lib/constants";
+import { TOTEMS } from "@/lib/totems";
 import BottomNav from "@/components/BottomNav";
+import MiniTotem from "@/components/MiniTotem";
+import PixelTotem from "@/components/PixelTotem";
 
 interface FullProfile {
   id: string;
@@ -17,6 +20,9 @@ interface FullProfile {
   photo_url: string | null;
   primary_tag: string | null;
   is_beacon_active: boolean;
+  beacon_totem: string | null;
+  beacon_color: string | null;
+  beacon_bg: string | null;
   share_email: boolean;
   linkedin_url: string | null;
 }
@@ -82,6 +88,7 @@ export default function PublicProfilePage() {
   const [loading, setLoading] = useState(true);
   const [waved, setWaved] = useState(false);
   const [waving, setWaving] = useState(false);
+  const [pinged, setPinged] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -95,7 +102,7 @@ export default function PublicProfilePage() {
       // Fetch the profile
       const { data: profileData } = await supabase
         .from("profiles")
-        .select("id, name, role, claude_title, tags, looking_for, photo_url, primary_tag, is_beacon_active, share_email, linkedin_url")
+        .select("id, name, role, claude_title, tags, looking_for, photo_url, primary_tag, is_beacon_active, beacon_totem, beacon_color, beacon_bg, share_email, linkedin_url")
         .eq("id", profileId)
         .single();
 
@@ -141,6 +148,20 @@ export default function PublicProfilePage() {
       });
     } finally {
       setWaving(false);
+    }
+  };
+
+  const handlePing = async () => {
+    if (pinged) return;
+    setPinged(true);
+    try {
+      await fetch("/api/beacon/ping", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ to_user: profileId }),
+      });
+    } catch {
+      // Keep optimistic state
     }
   };
 
@@ -193,9 +214,14 @@ export default function PublicProfilePage() {
               <h1 className="font-semibold text-lg">{profile.name}</h1>
               {profile.is_beacon_active && (
                 <span
-                  className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded animate-live-pulse"
+                  className="inline-flex items-center gap-1 text-[10px] font-mono font-bold px-1.5 py-0.5 rounded animate-live-pulse"
                   style={{ background: `${primaryColor?.bg ?? "var(--accent-success)"}20`, color: primaryColor?.bg ?? "var(--accent-success)" }}
                 >
+                  <MiniTotem
+                    totemId={profile.beacon_totem || TOTEMS[0].id}
+                    color={profile.beacon_color || primaryColor?.bg || "var(--accent-success)"}
+                    size={14}
+                  />
                   LIVE
                 </span>
               )}
@@ -218,6 +244,47 @@ export default function PublicProfilePage() {
             </div>
           )}
         </div>
+
+        {/* Beacon totem — "Look for this" card */}
+        {profile.is_beacon_active && (() => {
+          const totem = TOTEMS.find((t) => t.id === profile.beacon_totem) || TOTEMS[0];
+          const bColor = profile.beacon_color || primaryColor?.bg || "#DC6B2F";
+          const bBg = profile.beacon_bg || "#0A0A0F";
+          return (
+            <div
+              className="rounded-2xl overflow-hidden"
+              style={{ border: `1px solid ${bColor}30` }}
+            >
+              <div className="flex flex-col items-center py-6" style={{ background: bBg }}>
+                <div
+                  className="animate-beacon-pulse rounded-2xl p-4"
+                  style={{ "--tag-glow": bColor } as React.CSSProperties}
+                >
+                  <PixelTotem totem={totem} color={bColor} bgColor={bBg} size={120} />
+                </div>
+              </div>
+              <div
+                className="px-4 py-3 flex items-center justify-between"
+                style={{ background: "var(--bg-secondary)" }}
+              >
+                <div>
+                  <p className="font-mono text-[10px] font-bold" style={{ color: "var(--text-secondary)" }}>
+                    LOOK FOR THIS
+                  </p>
+                  <p className="text-xs" style={{ color: bColor }}>
+                    {totem.name} totem
+                  </p>
+                </div>
+                <span
+                  className="text-[10px] font-mono font-bold px-2 py-1 rounded-full animate-live-pulse"
+                  style={{ background: `${bColor}20`, color: bColor }}
+                >
+                  LIVE NOW
+                </span>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Tags */}
         {profile.tags.length > 0 && (
@@ -305,6 +372,26 @@ export default function PublicProfilePage() {
               <span>LinkedIn →</span>
             </a>
           </div>
+        )}
+
+        {/* Beacon ping button */}
+        {!isOwnProfile && profile.is_beacon_active && (
+          <button
+            onClick={handlePing}
+            disabled={pinged}
+            className="w-full py-3 rounded-xl text-sm font-mono font-bold transition-all"
+            style={{
+              background: pinged
+                ? "var(--bg-elevated)"
+                : `${profile.beacon_color || primaryColor?.bg || "var(--accent-success)"}15`,
+              color: pinged
+                ? "var(--text-secondary)"
+                : profile.beacon_color || primaryColor?.bg || "var(--accent-success)",
+              border: `1px solid ${pinged ? "var(--border-subtle)" : `${profile.beacon_color || primaryColor?.bg || "var(--accent-success)"}30`}`,
+            }}
+          >
+            {pinged ? "Pinged!" : "On my way!"}
+          </button>
         )}
 
         {/* Wave button */}

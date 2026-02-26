@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { TAG_COLORS } from "@/lib/constants";
+import { TOTEMS } from "@/lib/totems";
+import MiniTotem from "./MiniTotem";
 
 interface ProfileCardProps {
   id: string;
@@ -12,6 +14,8 @@ interface ProfileCardProps {
   photo_url: string | null;
   primary_tag: string | null;
   is_beacon_active?: boolean;
+  beacon_totem?: string | null;
+  beacon_color?: string | null;
   match_score?: number;
   match_reason?: string;
   onWave?: (id: string) => void;
@@ -60,7 +64,8 @@ function Avatar({ name, photo_url, primary_tag, size = 56 }: {
 
 export default function ProfileCard({
   id, name, role, claude_title, tags, photo_url, primary_tag,
-  is_beacon_active, match_score, match_reason,
+  is_beacon_active, beacon_totem, beacon_color,
+  match_score, match_reason,
   onWave, waved, animationDelay = 0,
 }: ProfileCardProps) {
   const primaryColor = primary_tag ? TAG_COLORS[primary_tag] : null;
@@ -99,9 +104,14 @@ export default function ProfileCard({
             </Link>
             {is_beacon_active && (
               <span
-                className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded animate-live-pulse"
+                className="inline-flex items-center gap-1 text-[10px] font-mono font-bold px-1.5 py-0.5 rounded animate-live-pulse"
                 style={{ background: `${primaryColor?.bg ?? "var(--accent-success)"}20`, color: primaryColor?.bg ?? "var(--accent-success)" }}
               >
+                <MiniTotem
+                  totemId={beacon_totem || TOTEMS[0].id}
+                  color={beacon_color || primaryColor?.bg || "var(--accent-success)"}
+                  size={12}
+                />
                 LIVE
               </span>
             )}
