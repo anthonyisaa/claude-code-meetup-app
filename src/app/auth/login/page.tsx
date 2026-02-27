@@ -4,6 +4,18 @@ import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 const COOLDOWN_SECONDS = 60;
+const LS_KEY = "otp_sent_at";
+
+function getSavedCooldown(): number {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return 0;
+    const elapsed = Math.floor((Date.now() - Number(raw)) / 1000);
+    return Math.max(0, COOLDOWN_SECONDS - elapsed);
+  } catch {
+    return 0;
+  }
+}
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -11,6 +23,15 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [cooldown, setCooldown] = useState(0);
+
+  // Restore cooldown from localStorage on mount so page refreshes don't reset it
+  useEffect(() => {
+    const remaining = getSavedCooldown();
+    if (remaining > 0) {
+      setSent(true);
+      setCooldown(remaining);
+    }
+  }, []);
 
   useEffect(() => {
     if (cooldown <= 0) return;
@@ -36,6 +57,12 @@ export default function LoginPage() {
       setError(authError.message);
       setLoading(false);
       return;
+    }
+
+    try {
+      localStorage.setItem(LS_KEY, String(Date.now()));
+    } catch {
+      // localStorage unavailable — cooldown won't persist across refreshes
     }
 
     setSent(true);
