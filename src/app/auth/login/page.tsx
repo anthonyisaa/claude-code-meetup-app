@@ -1,7 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+
+const IS_DEV = process.env.NODE_ENV === "development";
 
 const COOLDOWN_SECONDS = 60;
 const LS_KEY = "otp_sent_at";
@@ -18,6 +21,7 @@ function getSavedCooldown(): number {
 }
 
 export default function LoginPage() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -68,6 +72,28 @@ export default function LoginPage() {
     setSent(true);
     setCooldown(COOLDOWN_SECONDS);
     setLoading(false);
+  };
+
+  const handleDevLogin = async () => {
+    if (!email) {
+      setError("Enter an email first");
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    const res = await fetch("/api/dev-login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    });
+    const json = await res.json();
+    if (!res.ok) {
+      setError(json.error ?? "Dev login failed");
+      setLoading(false);
+      return;
+    }
+    // Navigate to the generated magic link URL — no email required
+    router.push(json.url);
   };
 
   if (sent) {
@@ -122,6 +148,21 @@ export default function LoginPage() {
         >
           {loading ? "Sending..." : "Send Magic Link"}
         </button>
+        {IS_DEV && (
+          <button
+            type="button"
+            onClick={handleDevLogin}
+            disabled={loading}
+            className="w-full py-3 font-semibold rounded-xl border transition-colors disabled:opacity-50"
+            style={{
+              background: "rgba(234,179,8,0.1)",
+              borderColor: "rgba(234,179,8,0.4)",
+              color: "rgb(234,179,8)",
+            }}
+          >
+            Dev Login (skip email)
+          </button>
+        )}
       </form>
     </div>
   );
