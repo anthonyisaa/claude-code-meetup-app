@@ -86,12 +86,14 @@ export default function TermsPage() {
 
         <h2 className="text-xl font-semibold mt-8 mb-3 text-gray-900">Contact</h2>
         <p className="mb-4">
-          If you have questions, reach us at{" "}
+          If you have questions, please reach out through the{" "}
           <a
-            href="mailto:anthony.isaa@gmail.com"
+            href="https://github.com/anthonyisaa/Claude_Code_Meetup/issues"
             className="text-blue-600 underline underline-offset-2"
+            target="_blank"
+            rel="noopener noreferrer"
           >
-            anthony.isaa@gmail.com
+            GitHub repository
           </a>
           .
         </p>
