@@ -1,12 +1,12 @@
-# Claude Connect — Project Plan
+# Claude Connect — Architecture
+
+> This document was the original design spec used to build Claude Connect. It's preserved here as a reference for contributors and anyone forking this project for their own event.
 
 ## Overview
 
-**Claude Connect** is a progressive web app (PWA) for the Claude Code Meetup Singapore. It helps ~800 attendees discover, match with, and physically find like-minded people at the event — turning a large meetup into a space for meaningful connections.
+**Claude Connect** is a progressive web app (PWA) for meetup events. It helps attendees discover, match with, and physically find like-minded people at the event — turning a large meetup into a space for meaningful connections.
 
-**Tech Stack:** Next.js 14 (App Router) + TypeScript + Tailwind CSS + Supabase + Vercel
-**Timeline:** 3 days
-**URL target:** `claudeconnect.vercel.app` (or custom domain)
+**Tech Stack:** Next.js (App Router) + TypeScript + Tailwind CSS + Supabase + Vercel
 
 ---
 
@@ -747,7 +747,7 @@ self.addEventListener('notificationclick', (event) => {
 import webPush from 'web-push';
 
 webPush.setVapidDetails(
-  'mailto:hello@claudeconnect.app',
+  'mailto:your-email@example.com',
   process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
   process.env.VAPID_PRIVATE_KEY!
 );

@@ -88,7 +88,7 @@ export default function TermsPage() {
         <p className="mb-4">
           If you have questions, please reach out through the{" "}
           <a
-            href="https://github.com/anthonyisaa/Claude_Code_Meetup/issues"
+            href="https://github.com/anthropics/claude-code-meetup-app/issues"
             className="text-blue-600 underline underline-offset-2"
             target="_blank"
             rel="noopener noreferrer"
