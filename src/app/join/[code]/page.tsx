@@ -41,7 +41,7 @@ export default function JoinPage() {
           .from("profiles")
           .select("id, meetup_id")
           .eq("id", user.id)
-          .single();
+          .maybeSingle();
 
         if (profile?.meetup_id === meetup.id) {
           // Already registered for this exact meetup

@@ -95,7 +95,7 @@ export default function PublicProfilePage() {
         .from("profiles")
         .select("id, name, work_one_liner, current_season, discussion_topics, hoping_for, photo_url, linkedin_url, linkedin_public, share_email")
         .eq("id", profileId)
-        .single();
+        .maybeSingle();
 
       if (!profileData) { router.push("/discover"); return; }
       setProfile(profileData as FullProfile);
@@ -107,7 +107,7 @@ export default function PublicProfilePage() {
         .select("score, match_reason, conversation_starter")
         .eq("user_a", a)
         .eq("user_b", b)
-        .single();
+        .maybeSingle();
 
       if (matchData) setMatch(matchData as MatchData);
 

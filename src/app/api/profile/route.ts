@@ -62,9 +62,37 @@ export async function PUT(request: Request) {
   }
 
   const body = await request.json();
+
+  // Whitelist allowed fields to prevent mass assignment
+  const ALLOWED_FIELDS = [
+    "name",
+    "work_one_liner",
+    "current_season",
+    "discussion_topics",
+    "hoping_for",
+    "linkedin_url",
+    "linkedin_public",
+    "share_email",
+    "photo_url",
+    "meetup_id",
+    "checked_in",
+  ] as const;
+
+  const sanitized: Record<string, unknown> = {};
+  for (const key of ALLOWED_FIELDS) {
+    if (key in body) {
+      sanitized[key] = body[key];
+    }
+  }
+
+  // Users can only set checked_in to false (reset), not true (that's admin-only)
+  if (sanitized.checked_in === true) {
+    delete sanitized.checked_in;
+  }
+
   const { error } = await supabase
     .from("profiles")
-    .update({ ...body, updated_at: new Date().toISOString() })
+    .update({ ...sanitized, updated_at: new Date().toISOString() })
     .eq("id", user.id);
 
   if (error) {

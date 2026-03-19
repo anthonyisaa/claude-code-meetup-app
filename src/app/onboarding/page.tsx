@@ -55,7 +55,7 @@ export default function OnboardingPage() {
         .from("profiles")
         .select("id")
         .eq("id", user.id)
-        .single();
+        .maybeSingle();
 
       // New user who somehow already has a profile → skip to discover
       // Returning users are expected to have a profile, so we let them through

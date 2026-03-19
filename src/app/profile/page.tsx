@@ -102,7 +102,7 @@ export default function MyProfilePage() {
         .from("profiles")
         .select("id, name, work_one_liner, current_season, discussion_topics, hoping_for, photo_url, linkedin_url, linkedin_public, share_email, meetup_id")
         .eq("id", user.id)
-        .single();
+        .maybeSingle();
 
       if (!data) { router.push("/onboarding"); return; }
       setProfile(data as MyProfile);

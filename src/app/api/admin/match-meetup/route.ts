@@ -205,7 +205,7 @@ export async function POST(request: Request) {
   // Add meetup_id to all results and upsert
   const withMeetup = allResults.map((r) => ({ ...r, meetup_id }));
   await admin.from("matches").upsert(withMeetup, {
-    onConflict: "user_a,user_b",
+    onConflict: "meetup_id,user_a,user_b",
     ignoreDuplicates: false,
   });
 

@@ -49,7 +49,7 @@ export default function DiscoverPage() {
         .from("profiles")
         .select("id, meetup_id, checked_in")
         .eq("id", user.id)
-        .single();
+        .maybeSingle();
 
       if (!profile) { router.push("/onboarding"); return; }
 

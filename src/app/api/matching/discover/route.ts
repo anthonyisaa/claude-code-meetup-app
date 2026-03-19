@@ -14,7 +14,7 @@ export async function GET(request: Request) {
     .from("profiles")
     .select("meetup_id, checked_in")
     .eq("id", user.id)
-    .single();
+    .maybeSingle();
 
   if (!myProfile?.meetup_id) {
     return NextResponse.json({ profiles: [], total: 0, checkedIn: false });

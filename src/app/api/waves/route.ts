@@ -30,28 +30,16 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: waveError.message }, { status: 500 });
   }
 
-  // Check for mutual wave
+  // Check for mutual wave — connection is created automatically by DB trigger
+  // (create_mutual_connection) so we only need to check, not insert
   const { data: mutualWave } = await supabase
     .from("waves")
     .select("id")
     .eq("from_user", to_user)
     .eq("to_user", user.id)
-    .single();
+    .maybeSingle();
 
-  if (mutualWave) {
-    // Create connection (order user IDs consistently)
-    const [userA, userB] =
-      user.id < to_user ? [user.id, to_user] : [to_user, user.id];
-
-    await supabase.from("connections").insert({
-      user_a: userA,
-      user_b: userB,
-    });
-
-    return NextResponse.json({ mutual: true });
-  }
-
-  return NextResponse.json({ mutual: false });
+  return NextResponse.json({ mutual: !!mutualWave });
 }
 
 export async function GET(request: Request) {
