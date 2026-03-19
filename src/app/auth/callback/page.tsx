@@ -14,18 +14,19 @@ function CallbackInner() {
       const supabase = createClient();
       const code = searchParams.get("code");
 
-      let userId: string | null = null;
-
-      if (code) {
-        // PKCE flow (GitHub, Google OAuth)
-        const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-        if (error || !data.session) {
-          router.push("/auth/login?error=auth");
-          return;
+      const session = await (async () => {
+        if (code) {
+          // PKCE flow (magic link, Google OAuth)
+          const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+          if (error || !data.session) {
+            console.error("PKCE auth error:", error?.message);
+            router.push("/auth/login?error=auth");
+            return null;
+          }
+          return data.session;
         }
-        userId = data.session.user.id;
-      } else {
-        // Implicit flow (magic link) — parse hash tokens manually
+
+        // Implicit flow (legacy fallback) — parse hash tokens manually
         const hash = window.location.hash.substring(1);
         const params = new URLSearchParams(hash);
         const accessToken = params.get("access_token");
@@ -33,7 +34,7 @@ function CallbackInner() {
 
         if (!accessToken || !refreshToken) {
           router.push("/auth/login?error=auth");
-          return;
+          return null;
         }
 
         const { data, error } = await supabase.auth.setSession({
@@ -42,11 +43,14 @@ function CallbackInner() {
         });
 
         if (error || !data.session) {
+          console.error("Implicit auth error:", error?.message);
           router.push("/auth/login?error=auth");
-          return;
+          return null;
         }
-        userId = data.session.user.id;
-      }
+        return data.session;
+      })();
+
+      if (!session) return;
 
       // If the user came from a specific page (e.g. /admin), send them back there
       const next = searchParams.get("next");
@@ -58,8 +62,8 @@ function CallbackInner() {
       const { data: profile } = await supabase
         .from("profiles")
         .select("id")
-        .eq("id", userId)
-        .single();
+        .eq("id", session.user.id)
+        .maybeSingle();
 
       router.push(profile ? "/discover" : "/onboarding");
     };

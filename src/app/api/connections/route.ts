@@ -25,12 +25,12 @@ export async function GET() {
   const { data: connections, error } = await supabase
     .from("connections")
     .select(
-      `id, connected_at,
+      `id, created_at,
        profile_a:profiles!connections_user_a_fkey(id, name, work_one_liner, discussion_topics, photo_url, linkedin_url, share_email, email),
        profile_b:profiles!connections_user_b_fkey(id, name, work_one_liner, discussion_topics, photo_url, linkedin_url, share_email, email)`
     )
     .or(`user_a.eq.${user.id},user_b.eq.${user.id}`)
-    .order("connected_at", { ascending: false });
+    .order("created_at", { ascending: false });
 
   if (error || !connections) {
     return NextResponse.json([]);
@@ -39,7 +39,7 @@ export async function GET() {
   const result = (
     connections as unknown as Array<{
       id: string;
-      connected_at: string;
+      created_at: string;
       profile_a: RawProfile;
       profile_b: RawProfile;
     }>
@@ -47,7 +47,7 @@ export async function GET() {
     const other = c.profile_a.id === user.id ? c.profile_b : c.profile_a;
     return {
       id: c.id,
-      connected_at: c.connected_at,
+      connected_at: c.created_at,
       other: {
         ...other,
         email: other.share_email ? other.email : null,

@@ -1,5 +1,5 @@
-import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 // Weekly cron job to keep the Supabase free tier project from pausing.
 // Triggered by Vercel Cron every Monday at 9am UTC.
@@ -11,10 +11,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
+  const supabase = createAdminClient();
 
   // Lightweight query — just checks the DB is alive
   const { error } = await supabase.from("meetups").select("id").limit(1);
