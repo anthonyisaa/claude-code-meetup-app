@@ -7,7 +7,7 @@ An AI-powered networking app for Generalist World meetups. Attendees build a pro
 ## Features
 
 - **AI-Powered Matching** — Claude scores attendee compatibility based on discussion topics, current season, and what they're hoping for
-- **Guided Onboarding** — 5-step profile setup: name, work one-liner, current season, discussion topics, intentions + LinkedIn
+- **Guided Onboarding** — 5-step profile setup: name, work one-liner, current season, discussion topics, intentions + LinkedIn. Returning attendees get a 2-step version (topics + intentions only) — their name, photo, and work one-liner carry over automatically
 - **Discover Feed** — Browse top matches ranked by score, with match reasons and conversation starters
 - **Waves & Connections** — Send a wave to signal interest; mutual waves unlock LinkedIn and create a connection
 - **Admin Panel** — Create meetups, set discussion topics, add conversation starters, check in attendees, and run AI matching
@@ -81,7 +81,9 @@ An AI-powered networking app for Generalist World meetups. Attendees build a pro
 
 ### Attendee flow
 1. Click the invite link → sign in with Google or magic link
-2. Complete 5-step onboarding (name, work, season, topics, intentions)
+2. Complete onboarding:
+   - **First-time attendees** — 5-step profile setup (name, photo, work one-liner, current season, discussion topics, intentions + LinkedIn)
+   - **Returning attendees** — 2-step re-onboarding (discussion topics + intentions for the new meetup only; profile carries over)
 3. See your top matches in the Discover feed
 4. Wave at people you want to meet → mutual waves create a connection
 
@@ -96,7 +98,7 @@ src/
     connections/    # Mutual connections view
     discover/       # Discovery feed
     join/           # Invite link handler
-    onboarding/     # 5-step profile setup
+    onboarding/     # 5-step profile setup (2-step for returning attendees)
     profile/        # Profile view + edit
   components/       # Shared UI components (BottomNav)
   lib/              # Supabase clients, constants
